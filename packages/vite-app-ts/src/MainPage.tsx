@@ -15,6 +15,7 @@ import { useCreateAntNotificationHolder } from '~~/components/main/hooks/useAntN
 import { useBurnerFallback } from '~~/components/main/hooks/useBurnerFallback';
 import { useScaffoldProviders as useScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppProviders';
 import { BURNER_FALLBACK_ENABLED, MAINNET_PROVIDER } from '~~/config/app.config';
+import { BlockSelector } from '~~/components/pages';
 
 /**
  * ⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️
@@ -97,33 +98,16 @@ export const MainPage: FC = () => {
   // This is the list of tabs and their contents
   const pageList: TContractPageList = {
     mainPage: {
-      name: 'YourContract',
-      content: (
-        <GenericContract
-          contractName="YourContract"
-          contract={yourContract}
-          mainnetAdaptor={scaffoldAppProviders.mainnetAdaptor}
-          blockExplorer={scaffoldAppProviders.targetNetwork.blockExplorer}
-        />
-      ),
+      name: 'Block selector',
+      content: <BlockSelector />,
     },
     pages: [
       {
-        name: 'YourNFT',
+        name: 'YourContract',
         content: (
           <GenericContract
-            contractName="YourNFT"
-            contract={yourNFT}
-            mainnetAdaptor={scaffoldAppProviders.mainnetAdaptor}
-            blockExplorer={scaffoldAppProviders.targetNetwork.blockExplorer}></GenericContract>
-        ),
-      },
-      {
-        name: 'Dai',
-        content: (
-          <GenericContract
-            contractName="Dai"
-            contract={mainnetDai}
+            contractName="YourContract"
+            contract={yourContract}
             mainnetAdaptor={scaffoldAppProviders.mainnetAdaptor}
             blockExplorer={scaffoldAppProviders.targetNetwork.blockExplorer}
           />
