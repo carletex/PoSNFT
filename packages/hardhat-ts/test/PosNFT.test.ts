@@ -79,12 +79,20 @@ describe('PosNFT', function () {
   });
 
   it('Should get the winner (in between no exact match)', async () => {
-    const { user1 } = await getHardhatSigners(hre);
+    const { user1, user2 } = await getHardhatSigners(hre);
 
     const lastBlock = await PosNFTContract.LAST_BLOCK();
-    const mintTx = await PosNFTContract.mint(user1.address, lastBlock);
-    await mintTx.wait();
+    const user1BlockSelection = lastBlock.sub(100);
+    const user2BlockSelection = lastBlock.sub(200);
 
-    expect(await PosNFTContract._getWinner(lastBlock.add(1000))).to.be.equal(user1.address);
+    const winnerBlock = lastBlock.sub(160);
+
+    const mintUser1Tx = await PosNFTContract.mint(user1.address, user1BlockSelection);
+    await mintUser1Tx.wait();
+
+    const mintUser2Tx = await PosNFTContract.mint(user2.address, user2BlockSelection);
+    await mintUser2Tx.wait();
+
+    expect(await PosNFTContract._getWinner(winnerBlock)).to.be.equal(user2.address);
   });
 });

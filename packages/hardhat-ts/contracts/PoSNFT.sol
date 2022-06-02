@@ -34,33 +34,40 @@ contract PosNFT is ERC721, Ownable {
   // ToDo. Remove oracleFirstPosBlock => use mock.
   function _getWinner(uint256 _oracleFirstPosBlock) public view returns (address) {
     // require(firstPosBlock > 0, "First PoS block not set yet");
-//    console.log(super.ownerOf(_oracleFirstPosBlock));
 
-    // Exact match
-    // ????????? Not working. use call? (bool, data)
-//    (bool success, bytes memory result) = address(this).call(abi.encodeWithSignature("ownerOf(uint256)", _oracleFirstPosBlock));
-//    if (success) {
-//      console.log(success);
-//      console.log(super.ownerOf(_oracleFirstPosBlock));
-//      // ToDo. How can we use "result"?
-//      return super.ownerOf(_oracleFirstPosBlock);
-//    }
-    try ownerOf(_oracleFirstPosBlock) returns (address ownerAddress) {
-      return (ownerAddress);
-    } catch Error(string memory _) {}
+    // Exact match.
+    if (super._exists(_oracleFirstPosBlock)) {
+      return super.ownerOf(_oracleFirstPosBlock);
+    }
 
-    // Before match
+    // Before match. The merge happened before FIRST_BLOCK
+    // (the first tokenID, representing a blockNumber, we allowed to mint).
     if (_oracleFirstPosBlock <= FIRST_BLOCK) {
       return super.ownerOf(FIRST_BLOCK);
     }
-    // After match
+
+    // After match. The merge happened after LAST_BLOCK.
+    // (the last tokenID, representing a blockNumber, we allowed to mint).
     if (_oracleFirstPosBlock >= LAST_BLOCK) {
       return super.ownerOf(LAST_BLOCK);
     }
 
-    // In between match, with no owner => search for closest.
+    // In-between match => search for closest.
+    uint256 indexShift = 0;
+    // ToDo. Handle equal distance?. RN the closest below wins on equal distance.
+    // Loop until we find the winner.
+    while (_oracleFirstPosBlock - indexShift > FIRST_BLOCK && _oracleFirstPosBlock + indexShift < LAST_BLOCK) {
+      indexShift++;
+      if (super._exists(_oracleFirstPosBlock - indexShift)) {
+        return super.ownerOf(_oracleFirstPosBlock - indexShift);
+      }
 
-    // Shouldn't happen.
-    revert();
+      if (super._exists(_oracleFirstPosBlock + indexShift)) {
+        return super.ownerOf(_oracleFirstPosBlock + indexShift);
+      }
+    }
+
+    // Should only happen if we sell 0 NFTs :)
+    revert("No winners");
   }
 }
