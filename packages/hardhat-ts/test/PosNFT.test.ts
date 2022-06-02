@@ -2,9 +2,8 @@ import '../helpers/hardhat-imports';
 import './helpers/chai-imports';
 
 import { expect } from 'chai';
-import { ethers } from 'ethers';
+import { Contract, ethers } from 'ethers';
 import { deployMockContract } from 'ethereum-waffle';
-import { Contract } from 'ethers';
 import { IPosOracle__factory, PosNFT, PosNFT__factory } from 'generated/contract-types';
 import hre from 'hardhat';
 import { ABI } from 'hardhat-deploy/dist/types';
@@ -54,7 +53,7 @@ describe('PosNFT', function () {
     await expect(PosNFTContract.mint(user1.address, firstBlock)).to.be.reverted;
   });
 
-  it('Should revert if the PoS block is not set on the Oracle', async () => {
+  it('Should revert if the PoS block is not set on the Oracle (getWinner)', async () => {
     await mockPosOracle.mock.getFirstPosBlock.returns(ethers.utils.parseEther('0'));
 
     await expect(PosNFTContract._getWinner()).to.be.reverted;
@@ -113,5 +112,48 @@ describe('PosNFT', function () {
     await mockPosOracle.mock.getFirstPosBlock.returns(winnerBlock);
 
     expect(await PosNFTContract._getWinner()).to.be.equal(user2.address);
+  });
+
+  it('Should revert if the PoS block is not set on the Oracle (claim)', async () => {
+    await mockPosOracle.mock.getFirstPosBlock.returns(ethers.utils.parseEther('0'));
+
+    await expect(PosNFTContract.claim()).to.be.reverted;
+  });
+
+  it('Should pay the winner & BG on a valid claim', async () => {
+    const { user1, user2 } = await getHardhatSigners(hre);
+
+    const lastBlock = await PosNFTContract.LAST_BLOCK();
+    const user1BlockSelection = lastBlock.sub(100);
+    const user2BlockSelection = lastBlock.sub(200);
+
+    const mintUser1Tx = await PosNFTContract.mint(user1.address, user1BlockSelection);
+    await mintUser1Tx.wait();
+
+    const mintUser2Tx = await PosNFTContract.mint(user2.address, user2BlockSelection);
+    await mintUser2Tx.wait();
+
+    const winnerBlock = lastBlock.sub(160);
+    await mockPosOracle.mock.getFirstPosBlock.returns(winnerBlock);
+
+    // Send some ETH to the contract
+    const prize = ethers.utils.parseEther('50');
+    const fundTx = await user1.sendTransaction({
+      to: PosNFTContract.address,
+      value: prize,
+    });
+    await fundTx.wait();
+
+    const existingUser2Balance = await user2.getBalance();
+
+    const claimTx = await PosNFTContract.claim();
+    await claimTx.wait();
+    const bgAddress: string = await PosNFTContract.buidlGuidl();
+
+    const winnerPrize = prize.mul(90).div(100);
+    const winnerBalance = winnerPrize.add(existingUser2Balance);
+    expect(await user2.getBalance()).to.be.equal(winnerBalance);
+
+    expect(await hre.ethers.provider.getBalance(bgAddress)).to.be.equal(prize.mul(10).div(100));
   });
 });

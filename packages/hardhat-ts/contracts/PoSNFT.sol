@@ -15,6 +15,7 @@ interface IPosOracle {
 // ToDo. % for BG
 contract PosNFT is ERC721, Ownable {
   address public PosOracleAddress;
+  address public buidlGuidl = 0x97843608a00e2bbc75ab0C1911387E002565DEDE;
 
   // ToDo. July?
   uint256 public constant FIRST_BLOCK = 14885900;
@@ -37,11 +38,19 @@ contract PosNFT is ERC721, Ownable {
     _mint(_to, _blockNumber);
   }
 
+  function claim() public {
+    address winner = _getWinner();
+    // 90% for the winner
+    (bool sentWinner,) = winner.call{value: (address(this).balance / 100) * 90}("");
+    // Remaining (10%) goes for the buidlGuidl
+    (bool sentBG,) = buidlGuidl.call{value: address(this).balance}("");
+  }
+
   // ToDo. Private (public for testing)
   // ToDo. Remove oracleFirstPosBlock => use mock.
   function _getWinner() public view returns (address) {
     uint256 oracleFirstPosBlock = IPosOracle(PosOracleAddress).getFirstPosBlock();
-     require(oracleFirstPosBlock > 0, "First PoS block not set yet");
+    require(oracleFirstPosBlock > 0, "First PoS block not set yet");
 
     // Exact match.
     if (super._exists(oracleFirstPosBlock)) {
@@ -78,4 +87,6 @@ contract PosNFT is ERC721, Ownable {
     // Should only happen if we sell 0 NFTs :)
     revert("No winners");
   }
+
+  receive() external payable {}
 }
