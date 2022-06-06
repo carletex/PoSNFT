@@ -9,7 +9,6 @@ interface IPosBlockOracle {
   function getFirstRegisteredPosBlock() external view returns (uint256);
 }
 
-// ToDo. Mint price.
 // ToDo. SVG Generation on tokenURI
 // ToDo. Metadata on chain generation
 contract PosNFT is ERC721, Ownable {
@@ -19,6 +18,8 @@ contract PosNFT is ERC721, Ownable {
   address public PosBlockOracleAddress;
   address public buidlGuidl = 0x97843608a00e2bbc75ab0C1911387E002565DEDE;
 
+  uint256 public MINT_PRICE = 0.01 ether;
+
   constructor(address _PosBlockOracleAddress) ERC721("PosNFT", "PNFT") {
     PosBlockOracleAddress = _PosBlockOracleAddress;
   }
@@ -27,7 +28,9 @@ contract PosNFT is ERC721, Ownable {
     return "https://ipfs.io/ipfs/";
   }
 
-  function mint(address _to, uint256 _blockNumber) public {
+  function mint(address _to, uint256 _blockNumber) external payable {
+    require(msg.value >= MINT_PRICE, "Insufficient ETH amount");
+
     _mint(_to, _blockNumber);
     totalCounter.increment();
   }
