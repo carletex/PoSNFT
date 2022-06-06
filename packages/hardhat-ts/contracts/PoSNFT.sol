@@ -20,6 +20,8 @@ contract PosNFT is ERC721, Ownable {
 
   uint256 public MINT_PRICE = 0.01 ether;
 
+  bool public claimed = false;
+
   constructor(address _PosBlockOracleAddress) ERC721("PosNFT", "PNFT") {
     PosBlockOracleAddress = _PosBlockOracleAddress;
   }
@@ -29,6 +31,7 @@ contract PosNFT is ERC721, Ownable {
   }
 
   function mint(address _to, uint256 _blockNumber) external payable {
+    require(!claimed, "Game is over :)");
     require(msg.value >= MINT_PRICE, "Insufficient ETH amount");
 
     _mint(_to, _blockNumber);
@@ -36,6 +39,7 @@ contract PosNFT is ERC721, Ownable {
   }
 
   function claim() public {
+    require(!claimed, "Already claimed");
     uint256 oracleFirstPosBlock = IPosBlockOracle(PosBlockOracleAddress).getFirstRegisteredPosBlock();
     require(oracleFirstPosBlock > 0, "First PoS block not set yet");
 
@@ -44,6 +48,8 @@ contract PosNFT is ERC721, Ownable {
     (bool sentWinner,) = winner.call{value: (address(this).balance / 100) * 90}("");
     // Remaining (10%) goes for the buidlGuidl
     (bool sentBG,) = buidlGuidl.call{value: address(this).balance}("");
+
+    claimed = true;
   }
 
   function _getWinner(uint256 _winnerBlock) internal view returns (address) {
