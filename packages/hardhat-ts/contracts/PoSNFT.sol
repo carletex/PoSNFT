@@ -36,22 +36,20 @@ contract PosNFT is ERC721, Ownable {
   }
 
   function claim() public {
-    address winner = _getWinner();
+    uint256 oracleFirstPosBlock = IPosBlockOracle(PosBlockOracleAddress).getFirstRegisteredPosBlock();
+    require(oracleFirstPosBlock > 0, "First PoS block not set yet");
+
+    address winner = _getWinner(oracleFirstPosBlock);
     // 90% for the winner
     (bool sentWinner,) = winner.call{value: (address(this).balance / 100) * 90}("");
     // Remaining (10%) goes for the buidlGuidl
     (bool sentBG,) = buidlGuidl.call{value: address(this).balance}("");
   }
 
-  // ToDo. Private (public for testing)
-  // ToDo. Remove oracleFirstPosBlock => use mock.
-  function _getWinner() public view returns (address) {
-    uint256 oracleFirstPosBlock = IPosBlockOracle(PosBlockOracleAddress).getFirstRegisteredPosBlock();
-    require(oracleFirstPosBlock > 0, "First PoS block not set yet");
-
+  function _getWinner(uint256 _winnerBlock) internal view returns (address) {
     // Exact match.
-    if (super._exists(oracleFirstPosBlock)) {
-      return super.ownerOf(oracleFirstPosBlock);
+    if (super._exists(_winnerBlock)) {
+      return super.ownerOf(_winnerBlock);
     }
 
     // No match => search for closest.
@@ -60,12 +58,12 @@ contract PosNFT is ERC721, Ownable {
     // Loop until we find the winner. 60000 blocks ~ 10 days
     while (indexShift < 60000) {
       indexShift++;
-      if (super._exists(oracleFirstPosBlock - indexShift)) {
-        return super.ownerOf(oracleFirstPosBlock - indexShift);
+      if (super._exists(_winnerBlock - indexShift)) {
+        return super.ownerOf(_winnerBlock - indexShift);
       }
 
-      if (super._exists(oracleFirstPosBlock + indexShift)) {
-        return super.ownerOf(oracleFirstPosBlock + indexShift);
+      if (super._exists(_winnerBlock + indexShift)) {
+        return super.ownerOf(_winnerBlock + indexShift);
       }
     }
 

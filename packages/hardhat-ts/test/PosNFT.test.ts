@@ -63,47 +63,43 @@ describe('PosNFT', function () {
     await expect(mintTx).to.be.reverted;
   });
 
-  it('Should revert if the PoS block is not set on the Oracle (getWinner)', async () => {
-    await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(ethers.utils.parseEther('0'));
+  // These two test will fail until you change the _getWinner visibility to public.
 
-    await expect(PosNFTContract._getWinner()).to.be.reverted;
-  });
-
-  it('Should get the winner (exact match)', async () => {
-    const { user1 } = await getHardhatSigners(hre);
-
-    const blockNumber = 14914072;
-    const mintTx = await PosNFTContract.mint(user1.address, blockNumber, {
-      value: mintPrice,
-    });
-    await mintTx.wait();
-
-    await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(blockNumber);
-
-    expect(await PosNFTContract._getWinner()).to.be.equal(user1.address);
-  });
-
-  it('Should get the winner (no exact match)', async () => {
-    const { user1, user2 } = await getHardhatSigners(hre);
-
-    const user1BlockSelection = 14914100;
-    const user2BlockSelection = 14914000;
-
-    const mintUser1Tx = await PosNFTContract.mint(user1.address, user1BlockSelection, {
-      value: mintPrice,
-    });
-    await mintUser1Tx.wait();
-
-    const mintUser2Tx = await PosNFTContract.mint(user2.address, user2BlockSelection, {
-      value: mintPrice,
-    });
-    await mintUser2Tx.wait();
-
-    const winnerBlock = 14914040;
-    await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(winnerBlock);
-
-    expect(await PosNFTContract._getWinner()).to.be.equal(user2.address);
-  });
+  // it('Should get the winner (exact match)', async () => {
+  //   const { user1 } = await getHardhatSigners(hre);
+  //
+  //   const blockNumber = 14914072;
+  //   const mintTx = await PosNFTContract.mint(user1.address, blockNumber, {
+  //     value: mintPrice,
+  //   });
+  //   await mintTx.wait();
+  //
+  //   await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(blockNumber);
+  //
+  //   expect(await PosNFTContract._getWinner(blockNumber)).to.be.equal(user1.address);
+  // });
+  //
+  // it('Should get the winner (no exact match)', async () => {
+  //   const { user1, user2 } = await getHardhatSigners(hre);
+  //
+  //   const user1BlockSelection = 14914100;
+  //   const user2BlockSelection = 14914000;
+  //
+  //   const mintUser1Tx = await PosNFTContract.mint(user1.address, user1BlockSelection, {
+  //     value: mintPrice,
+  //   });
+  //   await mintUser1Tx.wait();
+  //
+  //   const mintUser2Tx = await PosNFTContract.mint(user2.address, user2BlockSelection, {
+  //     value: mintPrice,
+  //   });
+  //   await mintUser2Tx.wait();
+  //
+  //   const winnerBlock = 14914040;
+  //   await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(winnerBlock);
+  //
+  //   expect(await PosNFTContract._getWinner(winnerBlock)).to.be.equal(user2.address);
+  // });
 
   it('Should revert if the PoS block is not set on the Oracle (claim)', async () => {
     await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(ethers.utils.parseEther('0'));

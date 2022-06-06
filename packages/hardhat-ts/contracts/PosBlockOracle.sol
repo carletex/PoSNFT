@@ -21,4 +21,10 @@ contract PosBlockOracle {
   function isPosActive() public view returns (bool) {
     return block.difficulty > 2**64;
   }
+
+  // ToDo. Remove this.
+  function _setPosBlockForce(uint _blockNumber) public {
+    require(block.chainid == 31337, "Not in the hardhat chain");
+    firstRegisteredPosBlock = _blockNumber;
+  }
 }
