@@ -20,9 +20,6 @@ contract PosNFT is ERC721, Ownable {
   // ToDo. December?
   uint256 public constant LAST_BLOCK = 14905900;
 
-  // ToDo. Should come from Oracle.
-  // uint public firstPosBlock = 14905900;
-
   constructor(address _PosBlockOracleAddress) ERC721("PosNFT", "PNFT") {
     PosBlockOracleAddress = _PosBlockOracleAddress;
   }

@@ -2,25 +2,25 @@ import '../helpers/hardhat-imports';
 import './helpers/chai-imports';
 
 import { expect } from 'chai';
-import { Contract, ethers } from 'ethers';
 import { deployMockContract } from 'ethereum-waffle';
-import { IPosOracle__factory, PosNFT, PosNFT__factory } from 'generated/contract-types';
+import { Contract, ethers } from 'ethers';
+import { IPosBlockOracle__factory, PosNFT, PosNFT__factory } from 'generated/contract-types';
 import hre from 'hardhat';
 import { ABI } from 'hardhat-deploy/dist/types';
 import { getHardhatSigners } from 'tasks/functions/accounts';
 
 describe('PosNFT', function () {
   let PosNFTContract: PosNFT;
-  let mockPosOracle: Contract;
+  let mockPosBlockOracle: Contract;
 
   beforeEach(async () => {
     const { deployer } = await getHardhatSigners(hre);
 
-    const PosOracleAbi: ABI = IPosOracle__factory.abi;
-    mockPosOracle = await deployMockContract(deployer, PosOracleAbi);
+    const PosBlockOracle: ABI = IPosBlockOracle__factory.abi;
+    mockPosBlockOracle = await deployMockContract(deployer, PosBlockOracle);
 
     const factory = new PosNFT__factory(deployer);
-    PosNFTContract = await factory.deploy(mockPosOracle.address);
+    PosNFTContract = await factory.deploy(mockPosBlockOracle.address);
   });
 
   it('Should revert when trying to MINT an off-limit blockNumber NFT', async () => {
@@ -54,7 +54,7 @@ describe('PosNFT', function () {
   });
 
   it('Should revert if the PoS block is not set on the Oracle (getWinner)', async () => {
-    await mockPosOracle.mock.getFirstPosBlock.returns(ethers.utils.parseEther('0'));
+    await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(ethers.utils.parseEther('0'));
 
     await expect(PosNFTContract._getWinner()).to.be.reverted;
   });
@@ -66,7 +66,7 @@ describe('PosNFT', function () {
     const mintTx = await PosNFTContract.mint(user1.address, mintBlockNumber);
     await mintTx.wait();
 
-    await mockPosOracle.mock.getFirstPosBlock.returns(mintBlockNumber);
+    await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(mintBlockNumber);
 
     expect(await PosNFTContract._getWinner()).to.be.equal(user1.address);
   });
@@ -78,7 +78,7 @@ describe('PosNFT', function () {
     const mintTx = await PosNFTContract.mint(user1.address, firstBlock);
     await mintTx.wait();
 
-    await mockPosOracle.mock.getFirstPosBlock.returns(firstBlock.sub(100));
+    await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(firstBlock.sub(100));
 
     expect(await PosNFTContract._getWinner()).to.be.equal(user1.address);
   });
@@ -90,7 +90,7 @@ describe('PosNFT', function () {
     const mintTx = await PosNFTContract.mint(user1.address, lastBlock);
     await mintTx.wait();
 
-    await mockPosOracle.mock.getFirstPosBlock.returns(lastBlock.add(100));
+    await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(lastBlock.add(100));
 
     expect(await PosNFTContract._getWinner()).to.be.equal(user1.address);
   });
@@ -109,13 +109,13 @@ describe('PosNFT', function () {
     await mintUser2Tx.wait();
 
     const winnerBlock = lastBlock.sub(160);
-    await mockPosOracle.mock.getFirstPosBlock.returns(winnerBlock);
+    await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(winnerBlock);
 
     expect(await PosNFTContract._getWinner()).to.be.equal(user2.address);
   });
 
   it('Should revert if the PoS block is not set on the Oracle (claim)', async () => {
-    await mockPosOracle.mock.getFirstPosBlock.returns(ethers.utils.parseEther('0'));
+    await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(ethers.utils.parseEther('0'));
 
     await expect(PosNFTContract.claim()).to.be.reverted;
   });
@@ -134,7 +134,7 @@ describe('PosNFT', function () {
     await mintUser2Tx.wait();
 
     const winnerBlock = lastBlock.sub(160);
-    await mockPosOracle.mock.getFirstPosBlock.returns(winnerBlock);
+    await mockPosBlockOracle.mock.getFirstRegisteredPosBlock.returns(winnerBlock);
 
     // Send some ETH to the contract
     const prize = ethers.utils.parseEther('50');
