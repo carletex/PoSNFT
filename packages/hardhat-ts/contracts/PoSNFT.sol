@@ -1,20 +1,18 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
-//SPDX-License-Identifier: MIT
 
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-interface IPosOracle {
-  function getFirstPosBlock() external view returns (uint256);
+interface IPosBlockOracle {
+  function getFirstRegisteredPosBlock() external view returns (uint256);
 }
 
 // ToDo. Mint price.
 // ToDo. SVG Generation on tokenURI
 // ToDo. Metadata on chain generation
-// ToDo. % for BG
 contract PosNFT is ERC721, Ownable {
-  address public PosOracleAddress;
+  address public PosBlockOracleAddress;
   address public buidlGuidl = 0x97843608a00e2bbc75ab0C1911387E002565DEDE;
 
   // ToDo. July?
@@ -25,8 +23,8 @@ contract PosNFT is ERC721, Ownable {
   // ToDo. Should come from Oracle.
   // uint public firstPosBlock = 14905900;
 
-  constructor(address _PosOracleAddress) ERC721("PosNFT", "PNFT") {
-    PosOracleAddress = _PosOracleAddress;
+  constructor(address _PosBlockOracleAddress) ERC721("PosNFT", "PNFT") {
+    PosBlockOracleAddress = _PosBlockOracleAddress;
   }
 
   function _baseURI() internal view virtual override returns (string memory) {
@@ -49,7 +47,7 @@ contract PosNFT is ERC721, Ownable {
   // ToDo. Private (public for testing)
   // ToDo. Remove oracleFirstPosBlock => use mock.
   function _getWinner() public view returns (address) {
-    uint256 oracleFirstPosBlock = IPosOracle(PosOracleAddress).getFirstPosBlock();
+    uint256 oracleFirstPosBlock = IPosBlockOracle(PosBlockOracleAddress).getFirstRegisteredPosBlock();
     require(oracleFirstPosBlock > 0, "First PoS block not set yet");
 
     // Exact match.
