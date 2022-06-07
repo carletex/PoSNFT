@@ -1,11 +1,12 @@
 import { Button, InputNumber, Space, Typography } from 'antd';
 import { TTransactorFunc } from 'eth-components/functions';
-import { useContractReader } from 'eth-hooks';
+import { useContractReader, useEventListener } from 'eth-hooks';
 import { IEthersContext } from 'eth-hooks/models';
 import { ethers } from 'ethers';
 import React, { FC, useState } from 'react';
 
 import { PosNFT } from '~~/generated/contract-types';
+import LastMintedTable from './LastMintedTable';
 
 const { Text, Link } = Typography;
 
@@ -23,6 +24,9 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext })
   const [selectedBlock, setSelectedBlock] = useState(0);
 
   const [totalCount] = useContractReader(contract, contract?.totalCounter);
+  const [mintEvents] = useEventListener(contract, 'Transfer', 0);
+
+  console.log(mintEvents);
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex', margin: '20px auto', maxWidth: '800px' }}>
@@ -78,6 +82,15 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext })
         <Text>
           <strong>Total minted</strong>: {totalCount ? totalCount.toString() : '-'}{' '}
         </Text>
+      </div>
+
+      <div style={{ marginTop: '25px' }}>
+        <Space direction="vertical">
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            Last 25 minted
+          </Typography.Title>
+          <LastMintedTable events={mintEvents} />
+        </Space>
       </div>
     </Space>
   );
