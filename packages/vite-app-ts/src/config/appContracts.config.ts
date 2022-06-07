@@ -26,13 +26,13 @@ export const appContractsConfig = () => {
       // --------------------------------------------------
       // 🙋🏽‍♂️ Add your hadrdhat contracts here
       // --------------------------------------------------
-      YourContract: createConnectorForHardhatContract(
-        'YourContract',
-        hardhatContracts.YourContract__factory,
+      PosBlockOracle: createConnectorForHardhatContract(
+        'PosBlockOracle',
+        hardhatContracts.PosBlockOracle__factory,
         hardhatContractsJson
       ),
 
-      YourNFT: createConnectorForHardhatContract('YourNFT', hardhatContracts.YourNFT__factory, hardhatContractsJson),
+      PosNFT: createConnectorForHardhatContract('PosNFT', hardhatContracts.PosNFT__factory, hardhatContractsJson),
 
       // --------------------------------------------------
       // 🙋🏽‍♂️ Add your external contracts here, make sure to define the address in `externalContractsConfig.ts`

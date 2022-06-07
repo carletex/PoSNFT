@@ -1,11 +1,17 @@
 import '~~/styles/main-page.css';
 import { NETWORKS } from '@scaffold-eth/common/src/constants';
 import { GenericContract } from 'eth-components/ant/generic-contract';
-import { useContractReader, useBalance, useEthersAdaptorFromProviderOrSigners, useEventListener } from 'eth-hooks';
+import {
+  useContractReader,
+  useBalance,
+  useEthersAdaptorFromProviderOrSigners,
+  useEventListener,
+  useGasPrice,
+} from 'eth-hooks';
 import { useEthersAppContext } from 'eth-hooks/context';
 import { useDexEthPrice } from 'eth-hooks/dapps';
 import { asEthersAdaptor } from 'eth-hooks/functions';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import { BrowserRouter, Switch } from 'react-router-dom';
 
 import { MainPageFooter, MainPageHeader, createPagesAndTabs, TContractPageList } from './components/main';
@@ -15,7 +21,10 @@ import { useCreateAntNotificationHolder } from '~~/components/main/hooks/useAntN
 import { useBurnerFallback } from '~~/components/main/hooks/useBurnerFallback';
 import { useScaffoldProviders as useScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppProviders';
 import { BURNER_FALLBACK_ENABLED, MAINNET_PROVIDER } from '~~/config/app.config';
-import { BlockSelector } from '~~/components/pages';
+import { MintPage } from '~~/components/pages';
+import { transactor } from 'eth-components/functions';
+import { EthComponentsSettingsContext } from 'eth-components/models';
+import { getNetworkInfo } from '~~/functions';
 
 /**
  * ⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️
@@ -63,24 +72,24 @@ export const MainPage: FC = () => {
   // -----------------------------
 
   // init contracts
-  const yourContract = useAppContracts('YourContract', ethersAppContext.chainId);
-  const yourNFT = useAppContracts('YourNFT', ethersAppContext.chainId);
-  const mainnetDai = useAppContracts('DAI', NETWORKS.mainnet.chainId);
+  const posBlockOracle = useAppContracts('PosBlockOracle', ethersAppContext.chainId);
+  const posNFT = useAppContracts('PosNFT', ethersAppContext.chainId);
 
-  // keep track of a variable from the contract in the local React state:
-  const [purpose, update] = useContractReader(
-    yourContract,
-    yourContract?.purpose,
-    [],
-    yourContract?.filters.SetPurpose()
-  );
+  const ethComponentsSettings = useContext(EthComponentsSettingsContext);
+  const [gasPrice] = useGasPrice(ethersAppContext.chainId, 'fast', getNetworkInfo(ethersAppContext.chainId));
+  const tx = transactor(ethComponentsSettings, ethersAppContext?.signer, gasPrice);
+
+  // // keep track of a variable from the contract in the local React state:
+  // const [purpose, update] = useContractReader(
+  //   yourContract,
+  //   yourContract?.purpose,
+  //   [],
+  //   yourContract?.filters.SetPurpose()
+  // );
 
   // 📟 Listen for broadcast events
-  const [setPurposeEvents] = useEventListener(yourContract, 'SetPurpose', 0);
+  // const [setPurposeEvents] = useEventListener(yourContract, 'SetPurpose', 0);
 
-  // -----------------------------
-  // .... 🎇 End of examples
-  // -----------------------------
   // 💵 This hook will get the price of ETH from 🦄 Uniswap:
   const [ethPrice] = useDexEthPrice(scaffoldAppProviders.mainnetAdaptor?.provider, scaffoldAppProviders.targetNetwork);
 
@@ -98,19 +107,27 @@ export const MainPage: FC = () => {
   // This is the list of tabs and their contents
   const pageList: TContractPageList = {
     mainPage: {
-      name: 'Block selector',
-      content: <BlockSelector />,
+      name: 'Mint',
+      content: <MintPage tx={tx} contract={posNFT} ethersAppContext={ethersAppContext} />,
     },
     pages: [
       {
-        name: 'YourContract',
+        name: 'Debug',
         content: (
-          <GenericContract
-            contractName="YourContract"
-            contract={yourContract}
-            mainnetAdaptor={scaffoldAppProviders.mainnetAdaptor}
-            blockExplorer={scaffoldAppProviders.targetNetwork.blockExplorer}
-          />
+          <>
+            <GenericContract
+              contractName="PosBlockOracle"
+              contract={posBlockOracle}
+              mainnetAdaptor={scaffoldAppProviders.mainnetAdaptor}
+              blockExplorer={scaffoldAppProviders.targetNetwork.blockExplorer}
+            />
+            <GenericContract
+              contractName="PosNFT"
+              contract={posNFT}
+              mainnetAdaptor={scaffoldAppProviders.mainnetAdaptor}
+              blockExplorer={scaffoldAppProviders.targetNetwork.blockExplorer}
+            />
+          </>
         ),
       },
     ],

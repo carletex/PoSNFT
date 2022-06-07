@@ -4,4 +4,4 @@ import { lazier } from 'eth-hooks/helpers';
 // code is in the component file
 
 export const Subgraph = lazier(() => import('./subgraph/Subgraph'), 'Subgraph');
-export const BlockSelector = lazier(() => import('./blockSelector/BlockSelector'), 'BlockSelector');
+export const MintPage = lazier(() => import('./mintPage/MintPage'), 'MintPage');
