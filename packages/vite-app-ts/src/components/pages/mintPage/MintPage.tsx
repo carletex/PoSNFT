@@ -1,5 +1,6 @@
 import { Button, InputNumber, Space, Typography } from 'antd';
 import { TTransactorFunc } from 'eth-components/functions';
+import { useContractReader } from 'eth-hooks';
 import { IEthersContext } from 'eth-hooks/models';
 import { ethers } from 'ethers';
 import React, { FC, useState } from 'react';
@@ -20,6 +21,9 @@ export interface IMintPageProps {
  */
 export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext }) => {
   const [selectedBlock, setSelectedBlock] = useState(0);
+
+  const [totalCount] = useContractReader(contract, contract?.totalCounter);
+
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex', margin: '20px auto', maxWidth: '800px' }}>
       <Typography.Title level={2} style={{ margin: 0 }}>
@@ -68,6 +72,12 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext })
             CONNECT WALLET
           </Button>
         )}
+      </div>
+
+      <div>
+        <Text>
+          <strong>Total minted</strong>: {totalCount ? totalCount.toString() : '-'}{' '}
+        </Text>
       </div>
     </Space>
   );
