@@ -102,7 +102,14 @@ export const MainPage: FC = () => {
   const pageList: TContractPageList = {
     mainPage: {
       name: 'Mint',
-      content: <MintPage tx={tx} contract={posNFT} ethersAppContext={ethersAppContext} />,
+      content: (
+        <MintPage
+          tx={tx}
+          contract={posNFT}
+          ethersAppContext={ethersAppContext}
+          scaffoldAppProviders={scaffoldAppProviders}
+        />
+      ),
     },
     pages: [
       {

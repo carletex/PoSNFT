@@ -7,6 +7,7 @@ import React, { FC, useState } from 'react';
 
 import { PosNFT } from '~~/generated/contract-types';
 import LastMintedTable from './LastMintedTable';
+import { IScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppProviders';
 
 const { Text, Link } = Typography;
 
@@ -14,13 +15,14 @@ export interface IMintPageProps {
   tx: TTransactorFunc | undefined;
   contract: PosNFT | undefined;
   ethersAppContext: IEthersContext;
+  scaffoldAppProviders: IScaffoldAppProviders;
 }
 
 /**
  * Home / Mint page
  * @returns
  */
-export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext }) => {
+export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext, scaffoldAppProviders }) => {
   const [selectedBlock, setSelectedBlock] = useState(0);
 
   const [totalCount] = useContractReader(contract, contract?.totalCounter);
@@ -71,7 +73,9 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext })
             </Button>
           </Space>
         ) : (
-          <Button type="primary" onClick={() => console.log('loadWeb3Modal')}>
+          <Button
+            type="primary"
+            onClick={(): void => ethersAppContext.openModal(scaffoldAppProviders.createLoginConnector()!)}>
             CONNECT WALLET
           </Button>
         )}
