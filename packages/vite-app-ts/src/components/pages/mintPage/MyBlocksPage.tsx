@@ -1,15 +1,23 @@
+import { Card, List, Space, Typography } from 'antd';
+import { useContractReader, useSignerAddress } from 'eth-hooks';
 import { IEthersContext } from 'eth-hooks/models';
-import React, { FC, useState, useEffect } from 'react';
+import { BigNumber, BigNumberish } from 'ethers';
+import React, { FC, useState, useEffect, ReactElement } from 'react';
 
 import { PosNFT } from '~~/generated/contract-types';
-import { useContractReader, useSignerAddress } from 'eth-hooks';
-import { Space } from 'antd';
-import { BigNumberish, ethers } from 'ethers';
-import { QueryStatus } from 'react-query/types/core/types';
 
 export interface IMintPageProps {
   contract: PosNFT | undefined;
   ethersAppContext: IEthersContext;
+}
+
+interface IMyNft {
+  description: string;
+  id: BigNumber;
+  image: string;
+  name: string;
+  owner: string;
+  uri: string;
 }
 
 /**
@@ -17,13 +25,13 @@ export interface IMintPageProps {
  * @returns
  */
 export const MyBlocksPage: FC<IMintPageProps> = ({ contract, ethersAppContext }) => {
-  const [yourNfts, setYourNfts] = useState<any>([]);
+  const [yourNfts, setYourNfts] = useState<IMyNft[]>([]);
 
   const [address] = useSignerAddress(ethersAppContext.signer);
   const [balance, _, balanceStatus] = useContractReader(contract, contract?.balanceOf, [address ?? '']);
 
   useEffect(() => {
-    const updateYourCollectibles = async () => {
+    const updateYourCollectibles = async (): Promise<void> => {
       if (!contract) return;
 
       const yourNftInfo = [];
@@ -56,7 +64,26 @@ export const MyBlocksPage: FC<IMintPageProps> = ({ contract, ethersAppContext })
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex', margin: '20px auto', maxWidth: '800px' }}>
-      My NFTs
+      <Typography.Title level={2} style={{ margin: 0 }}>
+        <>Your NFTs ({balance?.toString()})</>
+      </Typography.Title>
+      <div style={{ width: 600, margin: 'auto', paddingBottom: 25 }}>
+        <List
+          dataSource={yourNfts}
+          grid={{ gutter: 16, column: 4 }}
+          renderItem={(item: IMyNft): ReactElement => {
+            const id = item.id.toNumber();
+
+            return (
+              <List.Item key={`${id}_${item.uri}_${item.owner}`}>
+                <Card>
+                  <img src={item.image} alt={`Block Number #${id}`} />
+                </Card>
+              </List.Item>
+            );
+          }}
+        />
+      </div>
     </Space>
   );
 };
