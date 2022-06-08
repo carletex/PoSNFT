@@ -1,6 +1,6 @@
 import { Button, InputNumber, Space, Typography } from 'antd';
 import { TTransactorFunc } from 'eth-components/functions';
-import { useContractReader, useEventListener } from 'eth-hooks';
+import { useContractReader, useEventListener, useSignerAddress } from 'eth-hooks';
 import { IEthersContext } from 'eth-hooks/models';
 import { ethers } from 'ethers';
 import React, { FC, useState } from 'react';
@@ -17,7 +17,7 @@ export interface IMintPageProps {
 }
 
 /**
- * Block Selector
+ * Home / Mint page
  * @returns
  */
 export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext }) => {
@@ -26,7 +26,7 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext })
   const [totalCount] = useContractReader(contract, contract?.totalCounter);
   const [mintEvents] = useEventListener(contract, 'Transfer', 0);
 
-  console.log(mintEvents);
+  const [address] = useSignerAddress(ethersAppContext.signer);
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex', margin: '20px auto', maxWidth: '800px' }}>
@@ -43,11 +43,10 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext })
       </Text>
 
       <div>
-        {ethersAppContext.signer ? (
+        {ethersAppContext.signer && address ? (
           <Space direction="vertical">
             <InputNumber
               min={0}
-              max={10}
               value={selectedBlock}
               style={{ minWidth: '200px' }}
               onChange={(number): void => {
@@ -59,7 +58,7 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext })
               onClick={async () => {
                 try {
                   const txCur = await tx?.(
-                    contract?.mint('0xf5Df873445760AaA722f94FEFF8c51323296c89a', selectedBlock, {
+                    contract?.mint(address, selectedBlock, {
                       value: ethers.utils.parseEther('0.01'),
                     })
                   );

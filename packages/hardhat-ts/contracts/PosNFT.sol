@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
@@ -11,7 +11,8 @@ interface IPosBlockOracle {
 
 // ToDo. SVG Generation on tokenURI
 // ToDo. Metadata on chain generation
-contract PosNFT is ERC721, Ownable {
+contract PosNFT is ERC721Enumerable, Ownable {
+  // ToDo. We can remove this (we have totalSupply on ERC721Enumerable).
   using Counters for Counters.Counter;
   Counters.Counter public totalCounter;
 

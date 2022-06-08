@@ -1,13 +1,7 @@
 import '~~/styles/main-page.css';
 import { NETWORKS } from '@scaffold-eth/common/src/constants';
 import { GenericContract } from 'eth-components/ant/generic-contract';
-import {
-  useContractReader,
-  useBalance,
-  useEthersAdaptorFromProviderOrSigners,
-  useEventListener,
-  useGasPrice,
-} from 'eth-hooks';
+import { useBalance, useEthersAdaptorFromProviderOrSigners, useGasPrice } from 'eth-hooks';
 import { useEthersAppContext } from 'eth-hooks/context';
 import { useDexEthPrice } from 'eth-hooks/dapps';
 import { asEthersAdaptor } from 'eth-hooks/functions';
@@ -21,7 +15,7 @@ import { useCreateAntNotificationHolder } from '~~/components/main/hooks/useAntN
 import { useBurnerFallback } from '~~/components/main/hooks/useBurnerFallback';
 import { useScaffoldProviders as useScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppProviders';
 import { BURNER_FALLBACK_ENABLED, MAINNET_PROVIDER } from '~~/config/app.config';
-import { MintPage } from '~~/components/pages';
+import { MintPage, MyBlocksPage } from '~~/components/pages';
 import { transactor } from 'eth-components/functions';
 import { EthComponentsSettingsContext } from 'eth-components/models';
 import { getNetworkInfo } from '~~/functions';
@@ -111,6 +105,10 @@ export const MainPage: FC = () => {
       content: <MintPage tx={tx} contract={posNFT} ethersAppContext={ethersAppContext} />,
     },
     pages: [
+      {
+        name: 'My Blocks',
+        content: <MyBlocksPage contract={posNFT} ethersAppContext={ethersAppContext} />,
+      },
       {
         name: 'Debug',
         content: (

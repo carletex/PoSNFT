@@ -5,3 +5,4 @@ import { lazier } from 'eth-hooks/helpers';
 
 export const Subgraph = lazier(() => import('./subgraph/Subgraph'), 'Subgraph');
 export const MintPage = lazier(() => import('./mintPage/MintPage'), 'MintPage');
+export const MyBlocksPage = lazier(() => import('./mintPage/MyBlocksPage'), 'MyBlocksPage');
