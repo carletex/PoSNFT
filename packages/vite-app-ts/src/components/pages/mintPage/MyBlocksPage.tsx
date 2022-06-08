@@ -17,7 +17,7 @@ export interface IMintPageProps {
  * @returns
  */
 export const MyBlocksPage: FC<IMintPageProps> = ({ contract, ethersAppContext }) => {
-  const [yourCollectibles, setYourCollectibles] = useState<any>([]);
+  const [yourNfts, setYourNfts] = useState<any>([]);
 
   const [address] = useSignerAddress(ethersAppContext.signer);
   const [balance, _, balanceStatus] = useContractReader(contract, contract?.balanceOf, [address ?? '']);
@@ -26,19 +26,19 @@ export const MyBlocksPage: FC<IMintPageProps> = ({ contract, ethersAppContext })
     const updateYourCollectibles = async () => {
       if (!contract) return;
 
-      const collectibleUpdate = [];
+      const yourNftInfo = [];
       for (let tokenIndex = 0; balance?.gt(tokenIndex); tokenIndex++) {
         try {
           console.log('Getting token index', tokenIndex);
           const tokenId: BigNumberish = await contract.tokenOfOwnerByIndex(address ?? '', tokenIndex);
-          console.log('Getting Loogie tokenId: ', tokenId);
           const tokenURI = await contract.tokenURI(tokenId);
-          console.log('tokenURI: ', tokenURI);
+          // Decode the Base64 response (removing the 29 chars of "data:application/json;base64,")
           const jsonManifestString = tokenURI ? atob(tokenURI.substring(29)) : '{}';
+          console.log('jsonManifestString: ', jsonManifestString);
 
           try {
             const jsonManifest = JSON.parse(jsonManifestString);
-            collectibleUpdate.push({ id: tokenId, uri: tokenURI, owner: address, ...jsonManifest });
+            yourNftInfo.push({ id: tokenId, uri: tokenURI, owner: address, ...jsonManifest });
           } catch (e) {
             console.log(e);
           }
@@ -46,7 +46,7 @@ export const MyBlocksPage: FC<IMintPageProps> = ({ contract, ethersAppContext })
           console.log(e);
         }
       }
-      setYourCollectibles(collectibleUpdate.reverse());
+      setYourNfts(yourNftInfo.reverse());
     };
 
     if (balanceStatus === 'success' && address) {
