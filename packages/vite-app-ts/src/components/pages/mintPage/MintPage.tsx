@@ -5,9 +5,9 @@ import { IEthersContext } from 'eth-hooks/models';
 import { ethers } from 'ethers';
 import React, { FC, useState } from 'react';
 
-import { PosNFT } from '~~/generated/contract-types';
-import LastMintedTable from './LastMintedTable';
 import { IScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppProviders';
+import { LastMintedTable } from '~~/components/pages';
+import { PosNFT } from '~~/generated/contract-types';
 
 const { Text, Link } = Typography;
 
@@ -87,7 +87,7 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext, s
         </Text>
       </div>
 
-      <div style={{ marginTop: '25px' }}>
+      <div style={{ margin: '25px 0 50px 0' }}>
         <Space direction="vertical">
           <Typography.Title level={3} style={{ margin: 0 }}>
             Last 25 minted
