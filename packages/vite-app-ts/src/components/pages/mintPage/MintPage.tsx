@@ -1,6 +1,6 @@
 import { Button, InputNumber, Space, Typography } from 'antd';
 import { TTransactorFunc } from 'eth-components/functions';
-import { useContractReader, useEventListener, useSignerAddress } from 'eth-hooks';
+import { useBlockNumber, useContractReader, useEventListener, useSignerAddress } from 'eth-hooks';
 import { IEthersContext } from 'eth-hooks/models';
 import { ethers } from 'ethers';
 import React, { FC, useState } from 'react';
@@ -24,11 +24,16 @@ export interface IMintPageProps {
  */
 export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext, scaffoldAppProviders }) => {
   const [selectedBlock, setSelectedBlock] = useState(0);
+  const [currentMainnetBlock, setCurrentMainnetBlock] = useState(0);
 
   const [totalCount] = useContractReader(contract, contract?.totalCounter);
   const [mintEvents] = useEventListener(contract, 'Transfer', 0);
 
   const [address] = useSignerAddress(ethersAppContext.signer);
+
+  useBlockNumber(scaffoldAppProviders.mainnetAdaptor?.provider, (blockNumber) =>
+    setCurrentMainnetBlock(blockNumber ?? 0)
+  );
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex', margin: '20px auto', maxWidth: '800px' }}>
@@ -42,6 +47,10 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext, s
         <Link href="https://buidlguidl.com/" target="_blank">
           BuidlGuidl
         </Link>
+      </Text>
+
+      <Text style={{ fontSize: '20px' }}>
+        <strong>Current Mainnet Block</strong>: {currentMainnetBlock}
       </Text>
 
       <div>
