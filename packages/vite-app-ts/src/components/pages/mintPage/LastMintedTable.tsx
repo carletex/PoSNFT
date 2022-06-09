@@ -47,24 +47,27 @@ export const LastMintedTable: FC<ILastMintedTableProps> = ({ events, scaffoldApp
     const processEvents = async (): Promise<void> => {
       console.log();
       const processedEvents = await Promise.all(
-        events.map(async (event) => {
-          const timestamp = (await event.getBlock()).timestamp;
-          return {
-            owner: (
-              <Address
-                address={event.args[1]}
-                ensProvider={scaffoldAppProviders?.mainnetAdaptor?.provider}
-                fontSize={16}
-                hideCopy
-              />
-            ),
-            tokenId: event.args[2].toString(),
-            timestamp: moment(timestamp, 'X').fromNow(),
-          };
-        })
+        events
+          .reverse()
+          .slice(0, 25)
+          .map(async (event) => {
+            const timestamp = (await event.getBlock()).timestamp;
+            return {
+              owner: (
+                <Address
+                  address={event.args[1]}
+                  ensProvider={scaffoldAppProviders?.mainnetAdaptor?.provider}
+                  fontSize={16}
+                  hideCopy
+                />
+              ),
+              tokenId: event.args[2].toString(),
+              timestamp: moment(timestamp, 'X').fromNow(),
+            };
+          })
       );
 
-      setDataSource(processedEvents.reverse().slice(0, 25));
+      setDataSource(processedEvents);
     };
 
     void processEvents();
