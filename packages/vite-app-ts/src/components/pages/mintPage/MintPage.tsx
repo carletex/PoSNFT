@@ -3,12 +3,13 @@ import { TTransactorFunc } from 'eth-components/functions';
 import { useBlockNumber, useContractReader, useEventListener, useSignerAddress } from 'eth-hooks';
 import { IEthersContext } from 'eth-hooks/models';
 import { ethers } from 'ethers';
+import moment from 'moment';
 import React, { FC, useState } from 'react';
 
 import { IScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppProviders';
 import { LastMintedTable } from '~~/components/pages';
+import { getEstimatedTimestampForBlock } from '~~/functions/getEstimatedTimestampForBlock';
 import { PosNFT } from '~~/generated/contract-types';
-
 const { Text, Link } = Typography;
 
 export interface IMintPageProps {
@@ -50,7 +51,14 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext, s
       </Text>
 
       <Text style={{ fontSize: '20px' }}>
-        <strong>Current Mainnet Block</strong>: {currentMainnetBlock}
+        <strong>Current Mainnet Block</strong>:{' '}
+        <span style={{ cursor: 'pointer' }} onClick={(): void => setSelectedBlock(currentMainnetBlock)}>
+          {currentMainnetBlock}
+        </span>
+      </Text>
+
+      <Text style={{ fontSize: '20px' }}>
+        <strong>Total minted</strong>: {totalCount ? totalCount.toString() : '-'}{' '}
       </Text>
 
       <div>
@@ -80,6 +88,12 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext, s
               }}>
               MINT for Ξ0.01
             </Button>
+            {selectedBlock > currentMainnetBlock && (
+              <Text>
+                <strong>Estimation</strong>:{' '}
+                {moment(getEstimatedTimestampForBlock(currentMainnetBlock, selectedBlock)).format('MMMM Do YYYY')}
+              </Text>
+            )}
           </Space>
         ) : (
           <Button
@@ -88,12 +102,6 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext, s
             CONNECT WALLET
           </Button>
         )}
-      </div>
-
-      <div>
-        <Text>
-          <strong>Total minted</strong>: {totalCount ? totalCount.toString() : '-'}{' '}
-        </Text>
       </div>
 
       <div style={{ margin: '25px 0 50px 0' }}>
