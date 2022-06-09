@@ -6,10 +6,12 @@ import moment from 'moment';
 import React, { FC, useState, useEffect } from 'react';
 
 import { IScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppProviders';
+import { getEstimatedTimestampForBlock } from '~~/functions/getEstimatedTimestampForBlock';
 
 export interface ILastMintedTableProps {
   events: TypedEvent<ethers.utils.Result>[];
   scaffoldAppProviders: IScaffoldAppProviders;
+  currentMainnetBlock: number;
 }
 
 interface IProcessedEvent {
@@ -22,7 +24,7 @@ interface IProcessedEvent {
  * Block Selector
  * @returns
  */
-export const LastMintedTable: FC<ILastMintedTableProps> = ({ events, scaffoldAppProviders }) => {
+export const LastMintedTable: FC<ILastMintedTableProps> = ({ events, scaffoldAppProviders, currentMainnetBlock }) => {
   const [dataSource, setDataSource] = useState<IProcessedEvent[]>([]);
 
   const columns = [
@@ -41,6 +43,11 @@ export const LastMintedTable: FC<ILastMintedTableProps> = ({ events, scaffoldApp
       dataIndex: 'timestamp',
       key: 'timestamp',
     },
+    {
+      title: 'Estimated on',
+      dataIndex: 'estimation',
+      key: 'estimation',
+    },
   ];
 
   useEffect(() => {
@@ -51,7 +58,9 @@ export const LastMintedTable: FC<ILastMintedTableProps> = ({ events, scaffoldApp
           .reverse()
           .slice(0, 25)
           .map(async (event) => {
-            const timestamp = (await event.getBlock()).timestamp;
+            const timestamp = (await event.getBlock()).timestamp * 1000; // to ms
+            const tokenId = event.args[2].toString();
+            const estimation = getEstimatedTimestampForBlock(currentMainnetBlock, Number(tokenId));
             return {
               owner: (
                 <Address
@@ -61,8 +70,9 @@ export const LastMintedTable: FC<ILastMintedTableProps> = ({ events, scaffoldApp
                   hideCopy
                 />
               ),
-              tokenId: event.args[2].toString(),
-              timestamp: moment(timestamp, 'X').fromNow(),
+              tokenId,
+              timestamp: moment(timestamp).fromNow(),
+              estimation: estimation > 0 ? moment(estimation).format('MMMM Do YYYY') : '-',
             };
           })
       );

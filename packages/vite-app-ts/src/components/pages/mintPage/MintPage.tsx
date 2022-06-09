@@ -109,7 +109,11 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext, s
           <Typography.Title level={3} style={{ margin: 0 }}>
             Last 25 minted
           </Typography.Title>
-          <LastMintedTable events={mintEvents} scaffoldAppProviders={scaffoldAppProviders} />
+          <LastMintedTable
+            events={mintEvents}
+            scaffoldAppProviders={scaffoldAppProviders}
+            currentMainnetBlock={currentMainnetBlock}
+          />
         </Space>
       </div>
     </Space>
