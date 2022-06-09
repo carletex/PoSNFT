@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import 'base64-sol/base64.sol';
 
-interface IPosBlockOracle {
+interface IPosBlockIncentivizedOracle {
   function getFirstRegisteredPosBlock() external view returns (uint256);
 }
 
@@ -20,19 +20,15 @@ contract PosNFT is ERC721Enumerable, Ownable {
   using Counters for Counters.Counter;
   Counters.Counter public totalCounter;
 
-  address public PosBlockOracleAddress;
+  address public PosBlockIncentivizedOracleAddress;
   address public buidlGuidl = 0x97843608a00e2bbc75ab0C1911387E002565DEDE;
 
   uint256 public MINT_PRICE = 0.01 ether;
 
   bool public claimed = false;
 
-  constructor(address _PosBlockOracleAddress) ERC721("PosNFT", "PNFT") {
-    PosBlockOracleAddress = _PosBlockOracleAddress;
-  }
-
-  function _baseURI() internal view virtual override returns (string memory) {
-    return "https://ipfs.io/ipfs/";
+  constructor(address _PosBlockIncentivizedOracleAddress) ERC721("PosNFT", "PNFT") {
+    PosBlockIncentivizedOracleAddress = _PosBlockIncentivizedOracleAddress;
   }
 
   function mint(address _to, uint256 _blockNumber) external payable {
@@ -45,7 +41,7 @@ contract PosNFT is ERC721Enumerable, Ownable {
 
   function claim() public {
     require(!claimed, "Already claimed");
-    uint256 oracleFirstPosBlock = IPosBlockOracle(PosBlockOracleAddress).getFirstRegisteredPosBlock();
+    uint256 oracleFirstPosBlock = IPosBlockIncentivizedOracle(PosBlockIncentivizedOracleAddress).getFirstRegisteredPosBlock();
     require(oracleFirstPosBlock > 0, "First PoS block not set yet");
 
     address winner = _getWinner(oracleFirstPosBlock);

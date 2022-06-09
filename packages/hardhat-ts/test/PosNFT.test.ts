@@ -4,7 +4,7 @@ import './helpers/chai-imports';
 import { expect } from 'chai';
 import { deployMockContract } from 'ethereum-waffle';
 import { BigNumber, Contract, ethers } from 'ethers';
-import { IPosBlockOracle__factory, PosNFT, PosNFT__factory } from 'generated/contract-types';
+import { PosBlockIncentivizedOracle__factory, PosNFT, PosNFT__factory } from 'generated/contract-types';
 import hre from 'hardhat';
 import { ABI } from 'hardhat-deploy/dist/types';
 import { getHardhatSigners } from 'tasks/functions/accounts';
@@ -17,7 +17,7 @@ describe('PosNFT', function () {
   beforeEach(async () => {
     const { deployer } = await getHardhatSigners(hre);
 
-    const PosBlockOracle: ABI = IPosBlockOracle__factory.abi;
+    const PosBlockOracle: ABI = PosBlockIncentivizedOracle__factory.abi;
     mockPosBlockOracle = await deployMockContract(deployer, PosBlockOracle);
 
     const factory = new PosNFT__factory(deployer);
