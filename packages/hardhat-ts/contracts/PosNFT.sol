@@ -61,10 +61,9 @@ contract PosNFT is ERC721Enumerable, Ownable {
 
     // No match => search for closest.
     uint256 indexShift = 0;
-    // ToDo. Handle equal distance?. RN the closest below wins on equal distance.
-    // Loop until we find the winner. 60000 blocks ~ 10 days
-    while (indexShift < 60000) {
+    while (indexShift < 100) {
       indexShift++;
+      // ToDo. Handle equal distance?. RN the closest below wins on equal distance.
       if (super._exists(_winnerBlock - indexShift)) {
         return super.ownerOf(_winnerBlock - indexShift);
       }
