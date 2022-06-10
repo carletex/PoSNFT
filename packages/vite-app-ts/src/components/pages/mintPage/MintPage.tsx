@@ -37,7 +37,7 @@ export const MintPage: FC<IMintPageProps> = ({
 
   const [totalCount] = useContractReader(nftContract, nftContract?.totalSupply);
   const [firstPosBlock] = useContractReader(oracleContract, oracleContract?.getFirstRegisteredPosBlock);
-  const [winner] = useContractReader(nftContract, nftContract?.getWinner, [firstPosBlock ?? 0]);
+  const [winner] = useContractReader(nftContract, nftContract?.ownerOf, [firstPosBlock ?? 0]);
 
   const [mintEvents] = useEventListener(nftContract, 'Transfer', 0);
 

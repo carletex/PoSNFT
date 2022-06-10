@@ -37,8 +37,7 @@ contract PosNFT is ERC721Enumerable, Ownable {
     uint256 oracleFirstPosBlock = IPosBlockIncentivizedOracle(PosBlockIncentivizedOracleAddress).getFirstRegisteredPosBlock();
     require(oracleFirstPosBlock > 0, "First PoS block not set yet");
 
-    address winner = getWinner(oracleFirstPosBlock);
-    require(winner != address(0), "No winners");
+    address winner = ownerOf(oracleFirstPosBlock);
 
     // 90% for the winner
     (bool sentWinner,) = winner.call{value: (address(this).balance / 100) * 90}("");
@@ -46,30 +45,6 @@ contract PosNFT is ERC721Enumerable, Ownable {
     (bool sentBG,) = buidlGuidl.call{value: address(this).balance}("");
 
     claimed = true;
-  }
-
-  function getWinner(uint256 _winnerBlock) public view returns (address) {
-    // Exact match.
-    if (super._exists(_winnerBlock)) {
-      return super.ownerOf(_winnerBlock);
-    }
-
-    // No match => search for closest.
-    uint256 indexShift = 0;
-    while (indexShift < 100) {
-      indexShift++;
-      // ToDo. Handle equal distance?. RN the closest below wins on equal distance.
-      if (super._exists(_winnerBlock - indexShift)) {
-        return super.ownerOf(_winnerBlock - indexShift);
-      }
-
-      if (super._exists(_winnerBlock + indexShift)) {
-        return super.ownerOf(_winnerBlock + indexShift);
-      }
-    }
-
-    // No winner
-    return address(0);
   }
 
   function tokenURI(uint256 id) public view override returns (string memory) {

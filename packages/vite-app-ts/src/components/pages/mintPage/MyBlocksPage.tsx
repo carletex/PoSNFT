@@ -34,17 +34,6 @@ export const MyBlocksPage: FC<IMintPageProps> = ({ nftContract, oracleContract, 
   const [balance, _, balanceStatus] = useContractReader(nftContract, nftContract?.balanceOf, [address ?? '']);
 
   const [firstPosBlock] = useContractReader(oracleContract, oracleContract?.getFirstRegisteredPosBlock);
-  const [winner] = useContractReader(nftContract, nftContract?.getWinner, [firstPosBlock ?? 0]);
-
-  const amItheWinner = address === winner;
-
-  let myWinnerBlock = BigNumber.from('0');
-  if (amItheWinner && yourNfts.length) {
-    const winnerNft = yourNfts.reduce((a, b) => {
-      return b.id.sub(firstPosBlock!).abs() < a.id.sub(firstPosBlock!).abs() ? b : a;
-    });
-    myWinnerBlock = winnerNft.id;
-  }
 
   useEffect(() => {
     const updateYourCollectibles = async (): Promise<void> => {
@@ -93,7 +82,7 @@ export const MyBlocksPage: FC<IMintPageProps> = ({ nftContract, oracleContract, 
             return (
               <List.Item key={`${id}_${item.uri}_${item.owner}`}>
                 <Card>
-                  <p>{myWinnerBlock.toNumber() === id && '🏆 Winner block 🏆'}</p>
+                  <p>{firstPosBlock?.toNumber() === id && '🏆 Winner block 🏆'}</p>
                   <img src={item.image} alt={`Block Number #${id}`} />
                 </Card>
               </List.Item>
