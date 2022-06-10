@@ -11,14 +11,8 @@ interface IPosBlockIncentivizedOracle {
   function getFirstRegisteredPosBlock() external view returns (uint256);
 }
 
-// ToDo. SVG Generation on tokenURI
-// ToDo. Metadata on chain generation
 contract PosNFT is ERC721Enumerable, Ownable {
   using Strings for uint256;
-
-  // ToDo. We can remove this (we have totalSupply on ERC721Enumerable).
-  using Counters for Counters.Counter;
-  Counters.Counter public totalCounter;
 
   address public PosBlockIncentivizedOracleAddress;
   address public buidlGuidl = 0x97843608a00e2bbc75ab0C1911387E002565DEDE;
@@ -36,7 +30,6 @@ contract PosNFT is ERC721Enumerable, Ownable {
     require(msg.value >= MINT_PRICE, "Insufficient ETH amount");
 
     _mint(_to, _blockNumber);
-    totalCounter.increment();
   }
 
   function claim() public {
@@ -44,7 +37,9 @@ contract PosNFT is ERC721Enumerable, Ownable {
     uint256 oracleFirstPosBlock = IPosBlockIncentivizedOracle(PosBlockIncentivizedOracleAddress).getFirstRegisteredPosBlock();
     require(oracleFirstPosBlock > 0, "First PoS block not set yet");
 
-    address winner = _getWinner(oracleFirstPosBlock);
+    address winner = getWinner(oracleFirstPosBlock);
+    require(winner != address(0), "No winners");
+
     // 90% for the winner
     (bool sentWinner,) = winner.call{value: (address(this).balance / 100) * 90}("");
     // Remaining (10%) goes for the buidlGuidl
@@ -53,7 +48,7 @@ contract PosNFT is ERC721Enumerable, Ownable {
     claimed = true;
   }
 
-  function _getWinner(uint256 _winnerBlock) internal view returns (address) {
+  function getWinner(uint256 _winnerBlock) public view returns (address) {
     // Exact match.
     if (super._exists(_winnerBlock)) {
       return super.ownerOf(_winnerBlock);
@@ -73,7 +68,8 @@ contract PosNFT is ERC721Enumerable, Ownable {
       }
     }
 
-    revert("No winners");
+    // No winner
+    return address(0);
   }
 
   function tokenURI(uint256 id) public view override returns (string memory) {

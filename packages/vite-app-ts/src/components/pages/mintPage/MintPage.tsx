@@ -10,6 +10,7 @@ import { IScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppPr
 import { LastMintedTable } from '~~/components/pages';
 import { getEstimatedTimestampForBlock } from '~~/functions/getEstimatedTimestampForBlock';
 import { PosBlockIncentivizedOracle, PosNFT } from '~~/generated/contract-types';
+import { Address } from 'eth-components/ant';
 const { Text, Link } = Typography;
 
 export interface IMintPageProps {
@@ -34,7 +35,9 @@ export const MintPage: FC<IMintPageProps> = ({
   const [selectedBlock, setSelectedBlock] = useState(0);
   const [currentMainnetBlock, setCurrentMainnetBlock] = useState(0);
 
-  const [totalCount] = useContractReader(nftContract, nftContract?.totalCounter);
+  const [totalCount] = useContractReader(nftContract, nftContract?.totalSupply);
+  const [firstPosBlock] = useContractReader(oracleContract, oracleContract?.getFirstRegisteredPosBlock);
+  const [winner] = useContractReader(nftContract, nftContract?.getWinner, [firstPosBlock ?? 0]);
 
   const [mintEvents] = useEventListener(nftContract, 'Transfer', 0);
 
@@ -42,6 +45,63 @@ export const MintPage: FC<IMintPageProps> = ({
 
   useBlockNumber(scaffoldAppProviders.mainnetAdaptor?.provider, (blockNumber) =>
     setCurrentMainnetBlock(blockNumber ?? 0)
+  );
+
+  const mintSection = (
+    <div>
+      {ethersAppContext.signer && address ? (
+        <Space direction="vertical">
+          <InputNumber
+            min={0}
+            value={selectedBlock}
+            style={{ minWidth: '200px' }}
+            onChange={(number): void => {
+              setSelectedBlock(number);
+            }}
+          />
+          <Button
+            type="primary"
+            onClick={async () => {
+              try {
+                const txCur = await tx?.(
+                  nftContract?.mint(address, selectedBlock, {
+                    value: ethers.utils.parseEther('0.01'),
+                  })
+                );
+                await txCur?.wait();
+              } catch (e) {
+                console.log('mint failed', e);
+              }
+            }}>
+            MINT for Ξ0.01
+          </Button>
+          {selectedBlock > currentMainnetBlock && (
+            <Text>
+              <strong>Estimation</strong>:{' '}
+              {moment(getEstimatedTimestampForBlock(currentMainnetBlock, selectedBlock)).format('MMMM Do YYYY')}
+            </Text>
+          )}
+        </Space>
+      ) : (
+        <Button
+          type="primary"
+          onClick={(): void => ethersAppContext.openModal(scaffoldAppProviders.createLoginConnector()!)}>
+          CONNECT WALLET
+        </Button>
+      )}
+    </div>
+  );
+
+  const winnerSection = (
+    <Space direction="vertical">
+      <Text style={{ fontSize: '20px', color: 'darkolivegreen' }}>
+        <strong>Game is over!</strong>
+      </Text>
+      <Text style={{ fontSize: '20px' }}>
+        Winner is{' '}
+        <Address address={winner} ensProvider={scaffoldAppProviders?.mainnetAdaptor?.provider} fontSize={16} hideCopy />
+      </Text>
+    </Space>
   );
 
   return (
@@ -61,7 +121,7 @@ export const MintPage: FC<IMintPageProps> = ({
       <Text style={{ fontSize: '20px' }}>
         <strong>Current Mainnet Block</strong>:{' '}
         <span style={{ cursor: 'pointer' }} onClick={(): void => setSelectedBlock(currentMainnetBlock)}>
-          {currentMainnetBlock}
+          {!!currentMainnetBlock ? currentMainnetBlock : '-'}
         </span>
       </Text>
 
@@ -69,48 +129,7 @@ export const MintPage: FC<IMintPageProps> = ({
         <strong>Total minted</strong>: {totalCount ? totalCount.toString() : '-'}{' '}
       </Text>
 
-      <div>
-        {ethersAppContext.signer && address ? (
-          <Space direction="vertical">
-            <InputNumber
-              min={0}
-              value={selectedBlock}
-              style={{ minWidth: '200px' }}
-              onChange={(number): void => {
-                setSelectedBlock(number);
-              }}
-            />
-            <Button
-              type="primary"
-              onClick={async () => {
-                try {
-                  const txCur = await tx?.(
-                    nftContract?.mint(address, selectedBlock, {
-                      value: ethers.utils.parseEther('0.01'),
-                    })
-                  );
-                  await txCur?.wait();
-                } catch (e) {
-                  console.log('mint failed', e);
-                }
-              }}>
-              MINT for Ξ0.01
-            </Button>
-            {selectedBlock > currentMainnetBlock && (
-              <Text>
-                <strong>Estimation</strong>:{' '}
-                {moment(getEstimatedTimestampForBlock(currentMainnetBlock, selectedBlock)).format('MMMM Do YYYY')}
-              </Text>
-            )}
-          </Space>
-        ) : (
-          <Button
-            type="primary"
-            onClick={(): void => ethersAppContext.openModal(scaffoldAppProviders.createLoginConnector()!)}>
-            CONNECT WALLET
-          </Button>
-        )}
-      </div>
+      {winner ? winnerSection : mintSection}
 
       <div style={{ margin: '25px 0 50px 0' }}>
         <Space direction="vertical">

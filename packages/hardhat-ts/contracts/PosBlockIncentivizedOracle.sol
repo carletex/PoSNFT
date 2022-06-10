@@ -46,7 +46,7 @@ contract PosBlockIncentivizedOracle {
 
   // ToDo. Remove this.
   // Creating for testing this contract on testnets
-  function _setPosBlockForce(uint _blockNumber) public {
+  function _setPosBlockForce(uint256 _blockNumber) public {
     require(block.chainid != 1, "No mainnet");
     firstRegisteredPosBlock = _blockNumber;
     winner = msg.sender;
