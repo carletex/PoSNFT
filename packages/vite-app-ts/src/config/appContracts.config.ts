@@ -26,9 +26,9 @@ export const appContractsConfig = () => {
       // --------------------------------------------------
       // 🙋🏽‍♂️ Add your hadrdhat contracts here
       // --------------------------------------------------
-      PosBlockOracle: createConnectorForHardhatContract(
-        'PosBlockOracle',
-        hardhatContracts.PosBlockOracle__factory,
+      PosBlockIncentivizedOracle: createConnectorForHardhatContract(
+        'PosBlockIncentivizedOracle',
+        hardhatContracts.PosBlockIncentivizedOracle__factory,
         hardhatContractsJson
       ),
 

@@ -5,7 +5,7 @@ const func: DeployFunction = async (hre: THardhatRuntimeEnvironmentExtended) => 
   const { getNamedAccounts, deployments } = hre;
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-  const oracleContract = await deploy('PosBlockOracle', {
+  const oracleContract = await deploy('PosBlockIncentivizedOracle', {
     from: deployer,
     log: true,
   });
@@ -18,4 +18,4 @@ const func: DeployFunction = async (hre: THardhatRuntimeEnvironmentExtended) => 
 };
 
 export default func;
-func.tags = ['PosBlockOracle', 'PosNFT'];
+func.tags = ['PosBlockIncentivizedOracle', 'PosNFT'];

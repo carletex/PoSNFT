@@ -9,12 +9,13 @@ import React, { FC, useState } from 'react';
 import { IScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppProviders';
 import { LastMintedTable } from '~~/components/pages';
 import { getEstimatedTimestampForBlock } from '~~/functions/getEstimatedTimestampForBlock';
-import { PosNFT } from '~~/generated/contract-types';
+import { PosBlockIncentivizedOracle, PosNFT } from '~~/generated/contract-types';
 const { Text, Link } = Typography;
 
 export interface IMintPageProps {
   tx: TTransactorFunc | undefined;
-  contract: PosNFT | undefined;
+  nftContract: PosNFT | undefined;
+  oracleContract: PosBlockIncentivizedOracle | undefined;
   ethersAppContext: IEthersContext;
   scaffoldAppProviders: IScaffoldAppProviders;
 }
@@ -23,12 +24,19 @@ export interface IMintPageProps {
  * Home / Mint page
  * @returns
  */
-export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext, scaffoldAppProviders }) => {
+export const MintPage: FC<IMintPageProps> = ({
+  tx,
+  nftContract,
+  oracleContract,
+  ethersAppContext,
+  scaffoldAppProviders,
+}) => {
   const [selectedBlock, setSelectedBlock] = useState(0);
   const [currentMainnetBlock, setCurrentMainnetBlock] = useState(0);
 
-  const [totalCount] = useContractReader(contract, contract?.totalCounter);
-  const [mintEvents] = useEventListener(contract, 'Transfer', 0);
+  const [totalCount] = useContractReader(nftContract, nftContract?.totalCounter);
+
+  const [mintEvents] = useEventListener(nftContract, 'Transfer', 0);
 
   const [address] = useSignerAddress(ethersAppContext.signer);
 
@@ -77,7 +85,7 @@ export const MintPage: FC<IMintPageProps> = ({ tx, contract, ethersAppContext, s
               onClick={async () => {
                 try {
                   const txCur = await tx?.(
-                    contract?.mint(address, selectedBlock, {
+                    nftContract?.mint(address, selectedBlock, {
                       value: ethers.utils.parseEther('0.01'),
                     })
                   );

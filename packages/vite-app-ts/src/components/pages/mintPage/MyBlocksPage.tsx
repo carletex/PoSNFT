@@ -7,7 +7,7 @@ import React, { FC, useState, useEffect, ReactElement } from 'react';
 import { PosNFT } from '~~/generated/contract-types';
 
 export interface IMintPageProps {
-  contract: PosNFT | undefined;
+  nftContract: PosNFT | undefined;
   ethersAppContext: IEthersContext;
 }
 
@@ -24,22 +24,22 @@ interface IMyNft {
  * Show your POS Block Number NFTS
  * @returns
  */
-export const MyBlocksPage: FC<IMintPageProps> = ({ contract, ethersAppContext }) => {
+export const MyBlocksPage: FC<IMintPageProps> = ({ nftContract, ethersAppContext }) => {
   const [yourNfts, setYourNfts] = useState<IMyNft[]>([]);
 
   const [address] = useSignerAddress(ethersAppContext.signer);
-  const [balance, _, balanceStatus] = useContractReader(contract, contract?.balanceOf, [address ?? '']);
+  const [balance, _, balanceStatus] = useContractReader(nftContract, nftContract?.balanceOf, [address ?? '']);
 
   useEffect(() => {
     const updateYourCollectibles = async (): Promise<void> => {
-      if (!contract) return;
+      if (!nftContract) return;
 
       const yourNftInfo = [];
       for (let tokenIndex = 0; balance?.gt(tokenIndex); tokenIndex++) {
         try {
           console.log('Getting token index', tokenIndex);
-          const tokenId: BigNumberish = await contract.tokenOfOwnerByIndex(address ?? '', tokenIndex);
-          const tokenURI = await contract.tokenURI(tokenId);
+          const tokenId: BigNumberish = await nftContract.tokenOfOwnerByIndex(address ?? '', tokenIndex);
+          const tokenURI = await nftContract.tokenURI(tokenId);
           // Decode the Base64 response (removing the 29 chars of "data:application/json;base64,")
           const jsonManifestString = tokenURI ? atob(tokenURI.substring(29)) : '{}';
           console.log('jsonManifestString: ', jsonManifestString);

@@ -1,7 +1,6 @@
 import '~~/styles/main-page.css';
-import { NETWORKS } from '@scaffold-eth/common/src/constants';
 import { GenericContract } from 'eth-components/ant/generic-contract';
-import { useBalance, useEthersAdaptorFromProviderOrSigners, useGasPrice } from 'eth-hooks';
+import { useEthersAdaptorFromProviderOrSigners, useGasPrice } from 'eth-hooks';
 import { useEthersAppContext } from 'eth-hooks/context';
 import { useDexEthPrice } from 'eth-hooks/dapps';
 import { asEthersAdaptor } from 'eth-hooks/functions';
@@ -66,29 +65,18 @@ export const MainPage: FC = () => {
   // -----------------------------
 
   // init contracts
-  const posBlockOracle = useAppContracts('PosBlockOracle', ethersAppContext.chainId);
+  const posBlockOracle = useAppContracts('PosBlockIncentivizedOracle', ethersAppContext.chainId);
   const posNFT = useAppContracts('PosNFT', ethersAppContext.chainId);
 
   const ethComponentsSettings = useContext(EthComponentsSettingsContext);
   const [gasPrice] = useGasPrice(ethersAppContext.chainId, 'fast', getNetworkInfo(ethersAppContext.chainId));
   const tx = transactor(ethComponentsSettings, ethersAppContext?.signer, gasPrice);
 
-  // // keep track of a variable from the contract in the local React state:
-  // const [purpose, update] = useContractReader(
-  //   yourContract,
-  //   yourContract?.purpose,
-  //   [],
-  //   yourContract?.filters.SetPurpose()
-  // );
-
   // 📟 Listen for broadcast events
   // const [setPurposeEvents] = useEventListener(yourContract, 'SetPurpose', 0);
 
   // 💵 This hook will get the price of ETH from 🦄 Uniswap:
   const [ethPrice] = useDexEthPrice(scaffoldAppProviders.mainnetAdaptor?.provider, scaffoldAppProviders.targetNetwork);
-
-  // 💰 this hook will get your balance
-  const [yourCurrentBalance] = useBalance(ethersAppContext.account);
 
   const [route, setRoute] = useState<string>('');
   useEffect(() => {
@@ -105,7 +93,8 @@ export const MainPage: FC = () => {
       content: (
         <MintPage
           tx={tx}
-          contract={posNFT}
+          nftContract={posNFT}
+          oracleContract={posBlockOracle}
           ethersAppContext={ethersAppContext}
           scaffoldAppProviders={scaffoldAppProviders}
         />
@@ -114,7 +103,7 @@ export const MainPage: FC = () => {
     pages: [
       {
         name: 'My Blocks',
-        content: <MyBlocksPage contract={posNFT} ethersAppContext={ethersAppContext} />,
+        content: <MyBlocksPage nftContract={posNFT} ethersAppContext={ethersAppContext} />,
       },
       {
         name: 'Debug',
