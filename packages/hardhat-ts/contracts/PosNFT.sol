@@ -73,9 +73,11 @@ contract PosNFT is ERC721Enumerable, Ownable {
 
   function generateSVGofTokenById(uint256 id) internal pure returns (string memory) {
     string memory svg = string(abi.encodePacked(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="80px" height="40px">',
-      '<text x="50%" y="15" dominant-baseline="middle" text-anchor="middle" stroke-width="25">PoS Block</text>',
-      '<text x="50%" y="32" dominant-baseline="middle" text-anchor="middle">#',id.toString(),'</text>',
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100">',
+      '<style>.base{font-family:serif;font-size:14px;}.title{font-weight:bold;}</style>',
+      '<rect width="100%" height="100%" fill="#9cdbcf" />',
+      '<text x="50%" y="40" dominant-baseline="middle" text-anchor="middle" class="base title">PoS Block</text>',
+      '<text x="50%" y="60" dominant-baseline="middle" text-anchor="middle" class="base">#',id.toString(),'</text>',
       '</svg>'
     ));
 

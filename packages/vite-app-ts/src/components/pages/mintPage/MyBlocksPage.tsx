@@ -75,7 +75,7 @@ export const MyBlocksPage: FC<IMintPageProps> = ({ nftContract, oracleContract, 
       <div style={{ width: 750, margin: 'auto', paddingBottom: 25 }}>
         <List
           dataSource={yourNfts}
-          grid={{ gutter: 16, column: 4 }}
+          grid={{ gutter: 16, column: 2 }}
           renderItem={(item: IMyNft): ReactElement => {
             const id = item.id.toNumber();
 
