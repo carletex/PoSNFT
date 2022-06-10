@@ -103,7 +103,9 @@ export const MainPage: FC = () => {
     pages: [
       {
         name: 'My Blocks',
-        content: <MyBlocksPage nftContract={posNFT} ethersAppContext={ethersAppContext} />,
+        content: (
+          <MyBlocksPage nftContract={posNFT} oracleContract={posBlockOracle} ethersAppContext={ethersAppContext} />
+        ),
       },
       {
         name: 'Debug',

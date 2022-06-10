@@ -95,7 +95,7 @@ export const MintPage: FC<IMintPageProps> = ({
   const winnerSection = (
     <Space direction="vertical">
       <Text style={{ fontSize: '20px', color: 'darkolivegreen' }}>
-        <strong>Game is over!</strong>
+        <strong>Game is over! First PoS block: {firstPosBlock?.toString()}</strong>
       </Text>
       {address === winner ? (
         <Space direction="vertical">

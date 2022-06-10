@@ -4,10 +4,13 @@ import { IEthersContext } from 'eth-hooks/models';
 import { BigNumber, BigNumberish } from 'ethers';
 import React, { FC, useState, useEffect, ReactElement } from 'react';
 
-import { PosNFT } from '~~/generated/contract-types';
+const { Text } = Typography;
+
+import { PosBlockIncentivizedOracle, PosNFT } from '~~/generated/contract-types';
 
 export interface IMintPageProps {
   nftContract: PosNFT | undefined;
+  oracleContract: PosBlockIncentivizedOracle | undefined;
   ethersAppContext: IEthersContext;
 }
 
@@ -24,11 +27,24 @@ interface IMyNft {
  * Show your POS Block Number NFTS
  * @returns
  */
-export const MyBlocksPage: FC<IMintPageProps> = ({ nftContract, ethersAppContext }) => {
+export const MyBlocksPage: FC<IMintPageProps> = ({ nftContract, oracleContract, ethersAppContext }) => {
   const [yourNfts, setYourNfts] = useState<IMyNft[]>([]);
 
   const [address] = useSignerAddress(ethersAppContext.signer);
   const [balance, _, balanceStatus] = useContractReader(nftContract, nftContract?.balanceOf, [address ?? '']);
+
+  const [firstPosBlock] = useContractReader(oracleContract, oracleContract?.getFirstRegisteredPosBlock);
+  const [winner] = useContractReader(nftContract, nftContract?.getWinner, [firstPosBlock ?? 0]);
+
+  const amItheWinner = address === winner;
+
+  let myWinnerBlock = BigNumber.from('0');
+  if (amItheWinner && yourNfts.length) {
+    const winnerNft = yourNfts.reduce((a, b) => {
+      return b.id.sub(firstPosBlock!).abs() < a.id.sub(firstPosBlock!).abs() ? b : a;
+    });
+    myWinnerBlock = winnerNft.id;
+  }
 
   useEffect(() => {
     const updateYourCollectibles = async (): Promise<void> => {
@@ -67,7 +83,7 @@ export const MyBlocksPage: FC<IMintPageProps> = ({ nftContract, ethersAppContext
       <Typography.Title level={2} style={{ margin: 0 }}>
         <>Your NFTs ({balance?.toString()})</>
       </Typography.Title>
-      <div style={{ width: 600, margin: 'auto', paddingBottom: 25 }}>
+      <div style={{ width: 750, margin: 'auto', paddingBottom: 25 }}>
         <List
           dataSource={yourNfts}
           grid={{ gutter: 16, column: 4 }}
@@ -77,6 +93,7 @@ export const MyBlocksPage: FC<IMintPageProps> = ({ nftContract, ethersAppContext
             return (
               <List.Item key={`${id}_${item.uri}_${item.owner}`}>
                 <Card>
+                  <p>{myWinnerBlock.toNumber() === id && '🏆 Winner block 🏆'}</p>
                   <img src={item.image} alt={`Block Number #${id}`} />
                 </Card>
               </List.Item>
