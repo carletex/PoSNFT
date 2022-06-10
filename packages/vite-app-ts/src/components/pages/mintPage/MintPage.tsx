@@ -10,7 +10,7 @@ import { IScaffoldAppProviders } from '~~/components/main/hooks/useScaffoldAppPr
 import { LastMintedTable } from '~~/components/pages';
 import { getEstimatedTimestampForBlock } from '~~/functions/getEstimatedTimestampForBlock';
 import { PosBlockIncentivizedOracle, PosNFT } from '~~/generated/contract-types';
-import { Address } from 'eth-components/ant';
+import { Address, Balance } from 'eth-components/ant';
 const { Text, Link } = Typography;
 
 export interface IMintPageProps {
@@ -97,10 +97,33 @@ export const MintPage: FC<IMintPageProps> = ({
       <Text style={{ fontSize: '20px', color: 'darkolivegreen' }}>
         <strong>Game is over!</strong>
       </Text>
-      <Text style={{ fontSize: '20px' }}>
-        Winner is{' '}
-        <Address address={winner} ensProvider={scaffoldAppProviders?.mainnetAdaptor?.provider} fontSize={16} hideCopy />
-      </Text>
+      {address === winner ? (
+        <Space direction="vertical">
+          <Text style={{ fontSize: '20px', color: 'darkolivegreen' }}>You won!</Text>
+          <Button
+            type="primary"
+            onClick={async () => {
+              try {
+                const txCur = await tx?.(nftContract?.claim());
+                await txCur?.wait();
+              } catch (e) {
+                console.log('claim failed', e);
+              }
+            }}>
+            Claim price
+          </Button>
+        </Space>
+      ) : (
+        <Text style={{ fontSize: '20px' }}>
+          Winner is{' '}
+          <Address
+            address={winner}
+            ensProvider={scaffoldAppProviders?.mainnetAdaptor?.provider}
+            fontSize={16}
+            hideCopy
+          />
+        </Text>
+      )}
     </Space>
   );
 
@@ -118,16 +141,23 @@ export const MintPage: FC<IMintPageProps> = ({
         </Link>
       </Text>
 
-      <Text style={{ fontSize: '20px' }}>
-        <strong>Current Mainnet Block</strong>:{' '}
-        <span style={{ cursor: 'pointer' }} onClick={(): void => setSelectedBlock(currentMainnetBlock)}>
-          {!!currentMainnetBlock ? currentMainnetBlock : '-'}
-        </span>
-      </Text>
+      <Space direction="vertical" size="small" style={{ border: '1px solid', padding: '20px' }}>
+        <Text style={{ fontSize: '20px' }}>
+          <strong>Current Mainnet Block</strong>:{' '}
+          <span style={{ cursor: 'pointer' }} onClick={(): void => setSelectedBlock(currentMainnetBlock)}>
+            {!!currentMainnetBlock ? currentMainnetBlock : '-'}
+          </span>
+        </Text>
 
-      <Text style={{ fontSize: '20px' }}>
-        <strong>Total minted</strong>: {totalCount ? totalCount.toString() : '-'}{' '}
-      </Text>
+        <Text style={{ fontSize: '20px' }}>
+          <strong>Total minted</strong>: {totalCount ? totalCount.toString() : '-'}{' '}
+        </Text>
+
+        <Text style={{ fontSize: '20px' }}>
+          <strong>Pot</strong>: Ξ
+          <Balance address={nftContract?.address} fontSize={18} padding=".25rem 0 .25rem .5rem" />
+        </Text>
+      </Space>
 
       {winner ? winnerSection : mintSection}
 
